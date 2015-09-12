@@ -1,12 +1,58 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Big Dog Data</title>
+    <meta charset="UTF-8">
+    <base href="/">
+
+    <title>BIG DOG Data</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="libs/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/file_upload.css">
+
+    <!-- JAVASCRIPT -->
+    <script src="libs/angular/angular.min.js"></script>
+    <script src="libs/angular-route/angular-route.min.js"></script>
+
+    <!-- shim is needed to support non-HTML5 FormData browsers (IE8-9)-->
+    <script src="libs/ng-file-upload/ng-file-upload-shim.min.js"></script>
+    <script src="libs/ng-file-upload/ng-file-upload.min.js"></script>
+
+    <!-- ANGULAR CUSTOM -->
+    <script src="js/controllers/controllers.js"></script>
+    <!--<script src="js/services/AppService.js"></script>
+    <script src="js/appRoutes.js"></script>
+    <script src="js/app.js"></script>-->
+
 </head>
+<body ng-app="dogApp" ng-controller="DogCtrl">
+    <div class="container">
+        <!-- HEADER -->
+        <nav class="navbar navbar-inverse">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">BIG DOG Data</a>
+            </div>
+        </nav>
 
-<body>
-	<h1>Welcome to BIG DOG Data</h1>
+        <!-- ANGULAR DYNAMIC CONTENT -->
+        <!-- <div ng-view></div> -->
+
+        <div class="jumbotron">
+            <h2>Upload on file select</h2>
+            
+            <button class="btn btn-info btn-lg" type="file" ngf-select="uploadFiles($file)" accept="image/*" ngf-max-height="1000" ngf-max-size="100MB">
+                <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Select File</button>
+            <br><br>
+            
+            <div class="progress">
+                <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:{{f.progress}}%" ng-bind="f.progress + '%'">
+                <span class="sr-only">40%</span>
+                </div>
+            </div>
+
+            {{errorMsg}}
+
+        </div>
+    </div>
 </body>
-
 </html>
