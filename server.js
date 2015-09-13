@@ -35,7 +35,7 @@ app.route('/upload')
 			var xtsn = filename.substring(filename.lastIndexOf("."), filename.length);
 	    	var ws = fs.createWriteStream('public/data/bbqpizza' + xtsn);
 	    	file.pipe(ws);
-	    	
+	    	res.redirect(req.url +":80")
 		});
 	});
 
