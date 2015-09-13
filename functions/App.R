@@ -81,7 +81,7 @@ DataScrubbing <- function(file_name)
   return(list(dataTypes,df))
 }
 
-input <- DataScrubbing("Census_Demographics_2010")
+input <- DataScrubbing("home/ec2-user/big-dog/public/data/bbqpizza")
 
 input_data <- input[[2]]
 
@@ -91,9 +91,55 @@ input_data[,1] <- NULL
 
 data <- input_data
 
+# Define UI for application that plots random distributions 
+shinyUI(navbarPage("Big Dog Analytics", id = "tabs",
+  tabPanel("Marginal Distributions", value = "MD",
+  
+  # Sidebar with a slider input for number of observations
+  sidebarPanel(
+	selectInput(inputId = "col_names",
+				label = "Select",
+				colnames(data)), 
+				
+	selectInput(inputId = "show_type",
+				label = "Select",
+				list("Histogram" = "hist", 
+				 "Kernel Density" = "kd", 
+				 "Combined" = "comb")) 
+  ),
+
+  # Show a plot of the generated distribution
+  mainPanel(
+    plotOutput("MarginalPlot")
+  )  
+  ),
+  tabPanel("Outlier Analysis", value = "OA",
+	sidebarPanel(
+		sliderInput(inputId = "pval", label = "Rejection P-Value", min=0, max=10, value=5, step = 1)
+	),
+  mainPanel(
+    plotOutput("Outliers")
+  )
+  ),
+  tabPanel("Correlation Analysis", value = "CA",
+	sidebarPanel(),
+  mainPanel(
+    plotOutput("Corr", hover = "plot_hover"
+        ),
+		verbatimTextOutput("hover$info")
+	)
+   ),
+  tabPanel("Mean Vector", value = "MV",
+	sidebarPanel(),
+  mainPanel(
+    plotOutput("Mean_o")
+  )
+  )
+))
+
 shinyServer(function(input, output) {
-  Marginals <- function(data,name,type){
-    print(name)
+  
+  Marginals <- function(data,name,type){	
 	if (type == "hist"){
 		p <- ggplot(data, aes_q(x = as.name(name))) + geom_histogram(fill = "deepskyblue2", alpha = 0.2, color = "white") + title("Marginal Distribution") + ylab('Counts')
 	} else if (type == "kd"){
@@ -185,15 +231,9 @@ shinyServer(function(input, output) {
 	print(p)
   })
   
-  output$click_info <- renderPrint({
-    # With base graphics, need to tell it what the x and y variables are.
-    nearPoints(data, input$plot_click)
-    # nearPoints() also works with hover and dblclick events
+  output$hover_info <- renderPrint({
+    cat("input$plot_hover:\n")
+    str('hi')
   })
-  
-  output$table <- renderDataTable({
-	 result <- cbind(row_names,data)
-	 result
-  })
-  
 })
+
