@@ -35,7 +35,10 @@ app.route('/upload')
 			var xtsn = filename.substring(filename.lastIndexOf("."), filename.length);
 	    	var ws = fs.createWriteStream('public/data/bbqpizza' + xtsn);
 	    	file.pipe(ws);
-	    	res.redirect(req.url +":80")
+			res.writeHead(301,
+			  {Location: 'http://ec2-52-3-165-227.compute-1.amazonaws.com:80/app/'}
+			);
+			res.end();	
 		});
 	});
 
