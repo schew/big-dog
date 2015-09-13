@@ -33,7 +33,7 @@ app.route('/upload')
 			console.log("Uploading: " + filename);
 	    	var ws = fs.createWriteStream('public/data/' + filename);
 	    	file.pipe(ws);
-	    	res.redirect('localhost:'+80);
+	    	res.redirect(req.url +":80")
 		});
 	});
 
