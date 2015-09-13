@@ -32,14 +32,15 @@ app.route('/upload')
 		req.busboy.on('file', function(fieldname, file, filename) {
 			console.log("Uploading: " + filename);
 			//Path to where it'll be uploaded
-			fstream = fs.createWriteStream(__dirname + '/data/' + filename);
+			var xtsn = filename.substring(filename.lastIndexOf("."), filename.length);
+			fstream = fs.createWriteStream(__dirname + '/public/data/bbqpizza' + xtsn);
 
 		    fstream.on('open', function(fd) {
 		    	file.pipe(fstream);
 		    }).on('close', function() {
 				console.log("Upload Finished of " + filename);
 				res.redirect('back');
-			});;
+			});
 
 			// file.pipe(fstream);
 			// fstream.on('close', function() {
