@@ -170,7 +170,7 @@ shinyServer(function(input, output) {
     data.frame(Outlier_Names = show_outliers$Names, Distances = show_outliers$Distances)
 	#nearPoints(df_outliers[,c(1:2)], input$plot_brush)#, xval = "x", yval = "y")
     # nearPoints() also works with hover and dblclick events
-  })
+  }, options= list(searching = FALSE))
   
   output$table <- renderDataTable({
 	 result <- cbind(row_names,data)
