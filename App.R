@@ -2,7 +2,6 @@ library(shiny)
 library(ggplot2)
 library(robustbase)
 library(reshape)
-library(Cairo)
 library(xlsx)
 
 DataScrubbing <- function(file_name) 
