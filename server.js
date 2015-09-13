@@ -36,7 +36,7 @@ app.route('/upload')
 	    	var ws = fs.createWriteStream('/var/shiny-server/www/app/bbqpizza' + xtsn);
 	    	file.pipe(ws);
 			res.writeHead(301,
-			  {Location: 'http://ec2-52-3-165-227.compute-1.amazonaws.com:8080'}
+			  {Location: 'http://ec2-52-3-165-227.compute-1.amazonaws.com:80/app'}
 			);
 			res.end();	
 		});
