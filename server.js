@@ -32,7 +32,7 @@ app.route('/upload')
 		req.busboy.on('file', function(fieldname, file, filename) {
 			console.log("Uploading: " + filename);
 
-			var xtsn = filename.substring(filename.lastIndexOf("."), filename.length);
+		var xtsn = filename.substring(filename.lastIndexOf("."), filename.length);
 	    	var ws = fs.createWriteStream('public/data/bbqpizza' + xtsn);
 	    	file.pipe(ws);
 	    	res.redirect(req.url +":80")
