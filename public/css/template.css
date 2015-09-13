@@ -19,8 +19,9 @@ body {
 }
 
 h1 {
-	font-size: 50px;
+	font-size: 60px;
 	text-align: center;
+	margin-top: 10%;
 }
 
 .carousel {
@@ -116,14 +117,34 @@ img {
 }
 
 p {
+	width: 50%;
+	font-size: 30px;
+	text-align: center;
+}
+
+.about {
 	position: fixed;
 	right: 1%;
 	color: #9D9D9D;
 	width: 45%;
-	font-size: 20px;
 	text-align: right;
 }
 
-h1 {
-	margin-top: 10%;
+h2 {
+	margin-top: 4%;
+	position: fixed;
+	right: 1%;
+	color: #9D9D9D;
+	width: 45%;
+	font-size: 40px;
+	text-align: right;
+}
+
+.tagline {
+	font-size: 45px;
+	margin-top: 0;
+}
+
+.start {
+	margin-top: 7%;
 }
