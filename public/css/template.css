@@ -79,6 +79,7 @@ hr {
 	right: 2%;
     width: 450px;
     height: auto;
+    opacity: .2;
 }
 
 .carousel-control.left {
@@ -105,10 +106,6 @@ iframe {
 	width: 90%;
 	margin-top: 20px;
 	height: 600px;
-}
-
-img {
-	opacity: .2;
 }
 
 .carousel-indicators {
@@ -146,5 +143,14 @@ h2 {
 }
 
 .start {
-	margin-top: 7%;
+	margin-top: 6%;
+}
+
+.break {
+	font-size: 50px;
+}
+
+.breakimg {
+    width: 500px;
+    height: auto;
 }
