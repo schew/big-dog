@@ -83,7 +83,7 @@ DataScrubbing <- function(file_name)
   return(list(dataTypes,df))
 }
 
-input <- DataScrubbing("bbqpizza")#Census_Demographics_2010")#../../../../home/ec2-user/big-dog/public/data/bbqpizza
+input <- DataScrubbing("Census_Demographics_2010")#../../../../home/ec2-user/big-dog/public/data/bbqpizza
 
 input_data <- input[[2]]
 
@@ -98,9 +98,7 @@ shinyServer(function(input, output) {
 	show_outliers <- reactiveValues(Names = NULL, Distances = NULL)
 	
   Marginals <- function(data,name,type){
-    #print(name)
-	
-	
+    print(name)
 	if (type == "hist"){
 		p <- ggplot(data, aes_q(x = as.name(name))) + geom_histogram(fill = "deepskyblue2", alpha = 0.2, color = "white") + title("Marginal Distribution") + ylab('Counts')
 	} else if (type == "kd"){
@@ -173,16 +171,14 @@ shinyServer(function(input, output) {
   Mean_Vectors <- function(data, type){
 	 num_vars <- dim(data)[2]
 	
-	 output_mean <<- vector()
-	 output_se <<- vector()
 	 for (i in c(1:num_vars)){
 		name <- colnames(data)[i]
 		
-		output_mean[i] <<- mean(data[,i],na.rm = TRUE)	
-		output_se[i] <<- sd(data[,i],na.rm = TRUE) / sqrt(length(data[,3][!is.na(data[,3])]))
+		output_mean[i] <- mean(data[,i],na.rm = TRUE)	
+		output_se[i] <- sd(data[,i],na.rm = TRUE) / sqrt(length(data[,3][!is.na(data[,3])]))
 	 }
 
-	 index <<- output_mean < 100
+	 index <- output_mean < 100
 	 names_to_use <- colnames(data)
 	 
 	 df <- data.frame(names = names_to_use[index], means = output_mean[index])
@@ -194,7 +190,7 @@ shinyServer(function(input, output) {
 		p <- ggplot(df, aes(x = names, y = means))
 		 p <- p + geom_point() + ylab("Mean") + xlab("") + theme(plot.title = element_text(vjust=2), text = element_text(size=20), axis.text.x=element_text(angle=90, vjust = 0.6)) + ggtitle('Column Means') + coord_cartesian(ylim = ranges$y)
 	 } else if(type == "Scatter with error bars"){
-		limits <- aes(ymax = output_mean[index] + output_se[index], ymin=output_mean[index] - output_se[index])
+		 limits <- aes(ymax = output_mean[index] + output_se[index], ymin=output_mean[index] - output_se[index])
 		 p <- ggplot(df, aes(x = names, y = means))
 		 p <- p + geom_point() + geom_errorbar(limits, width=0.3) + ylab("Mean") + xlab("") + theme(plot.title = element_text(vjust=2), text = element_text(size=20), axis.text.x=element_text(angle=90, vjust = 0.6)) + ggtitle('Column Means') + coord_cartesian(ylim = ranges$y)
 	 } else if(type == "Violin Plot"){
