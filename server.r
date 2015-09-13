@@ -3,6 +3,8 @@ library(ggplot2)
 library(robustbase)
 library(reshape)
 library(xlsx)
+library(grid)
+library(fastcluster)
 
 DataScrubbing <- function(file_name) 
 {
@@ -81,7 +83,7 @@ DataScrubbing <- function(file_name)
   return(list(dataTypes,df))
 }
 
-input <- DataScrubbing("Census_Demographics_2010")
+input <- DataScrubbing("Census_Demographics_2010")#../../../../home/ec2-user/big-dog/public/data/bbqpizza
 
 input_data <- input[[2]]
 
@@ -117,13 +119,25 @@ shinyServer(function(input, output) {
 	
 	outlier <- mahalanobis_dist > cutoff
 	
-	df_outliers <- data.frame(x = c(1:dim(data)[1]), y = log(sqrt(mahalanobis_dist)), z = outlier)
+	df_outliers <<- data.frame(x = c(1:dim(data)[1]), y = log(sqrt(mahalanobis_dist)), z = outlier)
 	
 	p <- ggplot(df_outliers,aes(x = x,y = y))
 	
 	p <- p + geom_point(aes(colour = z)) + geom_abline(intercept = log(sqrt(cutoff)), slope = 0,linetype="dashed",colour = "red") + labs(x = "Observation Number",y = "log(Mahalanobis Distances)", title = paste("Outlier Plot")) + scale_colour_manual(name="Type", values = c("FALSE" = "blue","TRUE" = "#FF0080"), breaks=c("TRUE", "FALSE"), labels=c("Outlier", "Inlier"))	
 	
 	p <- p + theme(plot.title = element_text(vjust=2), text = element_text(size=20))
+	
+	return(list(df_outliers,p))
+  }
+  
+  Scree_Plot <- function(data){
+	result <- prcomp(data, center = TRUE, scale = TRUE)
+	retained_variance <- cumsum(unlist(result[1])^2) /  max(cumsum(unlist(result[1])^2))
+	
+	df <- data.frame(x = c(1:dim(data)[2]), y = retained_variance)
+	
+	p <- ggplot(df, aes(x = x,y = y)) + xlab('Retained Dimensions') + ylab('Explained Variance') + ggtitle('Scree Plot')
+	p <- p + geom_point() + geom_line() + theme(plot.title = element_text(vjust=2), text = element_text(size=20), axis.text.x=element_text(angle=45))	
   }
   
   Correlation <- function(data){
@@ -149,8 +163,6 @@ shinyServer(function(input, output) {
   Mean_Vectors <- function(data){
 	 num_vars <- dim(data)[2]
 	
-	 output_mean <- vector(,num_vars)
-	 output_se <- vector(,num_vars)
 	 for (i in c(1:num_vars)){
 		name <- colnames(data)[i]
 		
@@ -162,8 +174,22 @@ shinyServer(function(input, output) {
 	 
 	 limits <- aes(ymax = output_mean + output_se, ymin=output_mean - output_se)
 	 p <- ggplot(df, aes(x = names, y = means))
-	 p <- p + geom_point() + geom_errorbar(limits, width=0.3) + ylab("Mean") + xlab("")	
+	 p <- p + geom_point() + geom_errorbar(limits, width=0.3) + ylab("Mean") + xlab("") + theme(plot.title = element_text(vjust=2), text = element_text(size=12), axis.text.x=element_text(angle=90, vjust = 0.6))	
   }
+  
+  Clustering <- function(data,num){
+	clust <- hclust(dist(data), method = "complete")
+
+	memb <- cutree(clust, k = num)
+	
+	fit <- prcomp(data, center=TRUE, scale = TRUE)
+	
+	df <- data.frame(x = fit$x[,1], y = fit$x[,2], z = memb)
+	
+	p <- ggplot(df,aes(x = x,y = y, colour = factor(z)))
+	
+	p <- p + geom_point(size = 5) + xlab('First Principal Component') + ylab('Second Principle Component') + theme(plot.title = element_text(vjust=2), text = element_text(size=20), axis.text.x = element_text(vjust = 2)) + scale_colour_discrete(name = "Clusters")	
+   }
   
   output$MarginalPlot <- renderPlot({
     p <- Marginals(data,input$col_names,input$show_type)
@@ -171,7 +197,10 @@ shinyServer(function(input, output) {
   })
   
   output$Outliers <- renderPlot({
-	p <- Outliers(data,input$pval)
+	result <- Outliers(data,input$pval)
+	p <- result[2]
+	outlier_data <<- result[[1]]
+	#assign("outlier_data", result[[1]], envir = .GlobalEnv) 
 	print(p)
   })
   
@@ -185,9 +214,22 @@ shinyServer(function(input, output) {
 	print(p)
   })
   
-  output$click_info <- renderPrint({
+  output$Clust <- renderPlot({
+	p <- Clustering(data,input$num_clust)
+	print(p)
+  })
+  
+  output$Scree <- renderPlot({
+	p <- Scree_Plot(data)
+	print(p)
+  })
+  
+  output$brush_info <- renderPrint({
     # With base graphics, need to tell it what the x and y variables are.
-    nearPoints(data, input$plot_click)
+	#print("Why is this happening")
+	#paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
+    #print(df_outliers)
+	nearPoints(df_outliers[,c(1:2)], input$plot_brush)#, xval = "x", yval = "y")
     # nearPoints() also works with hover and dblclick events
   })
   
@@ -195,5 +237,6 @@ shinyServer(function(input, output) {
 	 result <- cbind(row_names,data)
 	 result
   })
+  
   
 })
