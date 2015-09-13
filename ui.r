@@ -32,24 +32,31 @@ shinyUI(navbarPage("Big Dog Analytics", id = "tabs",
   ),
   tabPanel("Outlier Analysis", value = "OA",
 	sidebarPanel(
-		sliderInput(inputId = "pval", label = "Rejection P-Value", min=0, max=10, value=5, step = 1)
+		sliderInput(inputId = "pval", label = "Rejection P-Value", min=0, max=10, value=5, step = 1),
+		dataTableOutput(outputId="outlier_info")
 	),
   mainPanel(
-    plotOutput("Outliers", brush = "plot_brush"
-        ),
-		verbatimTextOutput("brush_info")
+    plotOutput("Outliers")
+		
   )
   ),
   tabPanel("Correlation Analysis", value = "CA",
-	sidebarPanel(),
   mainPanel(
-    plotOutput("Corr")
+    plotOutput("Corr", width = "150%",height = "1200px")
 	)
    ),
   tabPanel("Mean Vector", value = "MV",
-	sidebarPanel(),
+	sidebarPanel(
+	selectInput(inputId = "mean_type",
+				label = "Select Type of Plot",
+				list("Scatter", "Scatter with error bars", "Box Plot","Violin Plot")
+				) 
+	 ),
   mainPanel(
-    plotOutput("Mean_o", height = "800px")
+    plotOutput("Mean_o", height = "800px", dblclick = "plot1_dblclick",
+        brush = brushOpts(
+          id = "plot1_brush",
+          resetOnNew = TRUE))
   )
   ),  
   tabPanel("Clustering", value = "C",

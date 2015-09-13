@@ -94,6 +94,9 @@ input_data[,1] <- NULL
 data <- input_data
 
 shinyServer(function(input, output) {
+	ranges <- reactiveValues(y = NULL)
+	show_outliers <- reactiveValues(Names = NULL, Distances = NULL)
+	
   Marginals <- function(data,name,type){
     print(name)
 	if (type == "hist"){
@@ -120,6 +123,11 @@ shinyServer(function(input, output) {
 	outlier <- mahalanobis_dist > cutoff
 	
 	df_outliers <<- data.frame(x = c(1:dim(data)[1]), y = log(sqrt(mahalanobis_dist)), z = outlier)
+	
+	
+	show_outliers$Names <<- row_names[df_outliers[,3]]
+	show_outliers$Distances <<- mahalanobis_dist[df_outliers[,3]]
+	
 	
 	p <- ggplot(df_outliers,aes(x = x,y = y))
 	
@@ -154,13 +162,13 @@ shinyServer(function(input, output) {
 	
 	p <- p + theme_grey(base_size = base_size) + labs(x = "", y = "") + scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) + ggtitle("Correlation Heatmap")
 	
-	p <- p + theme(axis.ticks = element_blank(), plot.title = element_text(vjust=2), axis.text.x = element_blank(), axis.text.y = element_blank(), text = element_text(size=20), legend.text=element_text(size=20), legend.title = element_text(size = 20)) + guides(fill = guide_colorbar(barwidth = 2, barheight = 10, title.position = "top", title.vjust = 10)) 
+	p <- p + theme(axis.ticks = element_blank(), plot.title = element_text(vjust=2), axis.text.x = element_text(angle=90, vjust = 0.6), axis.text.y = element_text(), text = element_text(size=20), legend.text=element_text(size=20), legend.title = element_text(size = 20)) + guides(fill = guide_colorbar(barwidth = 2, barheight = 10, title.position = "top", title.vjust = 10)) 
 	
 	#+ geom_text(aes(X2, X1, label = round(value,2)), color = "black", size = 10)
 
   }
   
-  Mean_Vectors <- function(data){
+  Mean_Vectors <- function(data, type){
 	 num_vars <- dim(data)[2]
 	
 	 for (i in c(1:num_vars)){
@@ -170,11 +178,26 @@ shinyServer(function(input, output) {
 		output_se[i] <- sd(data[,i],na.rm = TRUE) / sqrt(length(data[,3][!is.na(data[,3])]))
 	 }
 
-	 df <- data.frame(names = colnames(data), means = output_mean)
+	 index <- output_mean < 100
+	 names_to_use <- colnames(data)
 	 
-	 limits <- aes(ymax = output_mean + output_se, ymin=output_mean - output_se)
-	 p <- ggplot(df, aes(x = names, y = means))
-	 p <- p + geom_point() + geom_errorbar(limits, width=0.3) + ylab("Mean") + xlab("") + theme(plot.title = element_text(vjust=2), text = element_text(size=12), axis.text.x=element_text(angle=90, vjust = 0.6))	
+	 df <- data.frame(names = names_to_use[index], means = output_mean[index])
+	 
+	 keep_data <- data[,index]
+	 keep_data <- melt(keep_data)
+	 
+	 if (type == "Scatter"){
+		p <- ggplot(df, aes(x = names, y = means))
+		 p <- p + geom_point() + ylab("Mean") + xlab("") + theme(plot.title = element_text(vjust=2), text = element_text(size=20), axis.text.x=element_text(angle=90, vjust = 0.6)) + ggtitle('Column Means') + coord_cartesian(ylim = ranges$y)
+	 } else if(type == "Scatter with error bars"){
+		 limits <- aes(ymax = output_mean[index] + output_se[index], ymin=output_mean[index] - output_se[index])
+		 p <- ggplot(df, aes(x = names, y = means))
+		 p <- p + geom_point() + geom_errorbar(limits, width=0.3) + ylab("Mean") + xlab("") + theme(plot.title = element_text(vjust=2), text = element_text(size=20), axis.text.x=element_text(angle=90, vjust = 0.6)) + ggtitle('Column Means') + coord_cartesian(ylim = ranges$y)
+	 } else if(type == "Violin Plot"){
+		p <- ggplot(keep_data,aes(x = variable, y = value)) + geom_violin() + ylab("Mean") + xlab("") + theme(plot.title = element_text(vjust=2), text = element_text(size=20), axis.text.x=element_text(angle=90, vjust = 0.6)) + ggtitle('Column Means') + coord_cartesian(ylim = ranges$y)
+	 } else{
+		p <- ggplot(keep_data,aes(x = variable, y = value)) + geom_boxplot() + ylab("Mean") + xlab("") + theme(plot.title = element_text(vjust=2), text = element_text(size=20), axis.text.x=element_text(angle=90, vjust = 0.6)) + ggtitle('Column Means') + coord_cartesian(ylim = ranges$y)
+	 }
   }
   
   Clustering <- function(data,num){
@@ -210,7 +233,7 @@ shinyServer(function(input, output) {
   })
   
   output$Mean_o <- renderPlot({
-	p <- Mean_Vectors(data)
+	p <- Mean_Vectors(data,input$mean_type)
 	print(p)
   })
   
@@ -224,18 +247,27 @@ shinyServer(function(input, output) {
 	print(p)
   })
   
-  output$brush_info <- renderPrint({
-    # With base graphics, need to tell it what the x and y variables are.
-	#print("Why is this happening")
+  output$outlier_info <- renderDataTable({
 	#paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
-    #print(df_outliers)
-	nearPoints(df_outliers[,c(1:2)], input$plot_brush)#, xval = "x", yval = "y")
+	
+    data.frame(Outlier_Names = show_outliers$Names, Distances = show_outliers$Distances)
+	#nearPoints(df_outliers[,c(1:2)], input$plot_brush)#, xval = "x", yval = "y")
     # nearPoints() also works with hover and dblclick events
   })
   
   output$table <- renderDataTable({
 	 result <- cbind(row_names,data)
 	 result
+  })
+  
+  observeEvent(input$plot1_dblclick, {
+    brush <- input$plot1_brush
+    if (!is.null(brush)) {
+      ranges$y <- c(brush$ymin, brush$ymax)
+
+    } else {
+      ranges$y <- NULL
+    }
   })
   
   
