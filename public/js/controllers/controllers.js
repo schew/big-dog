@@ -10,6 +10,7 @@ app.controller('DogCtrl', ['$scope', 'Upload', '$timeout', function ($scope, Upl
             //     file: file
             // });
             file.upload = Upload.upload({
+<<<<<<< HEAD
         		url: 'https://angular-file-upload.s3.amazonaws.com/bigdogdata', //S3 upload url including bucket name
         		method: 'POST',
         		fields : {
@@ -23,6 +24,13 @@ app.controller('DogCtrl', ['$scope', 'Upload', '$timeout', function ($scope, Upl
         		},
         		file: file
       		});
+=======
+                 url: 'api/user/uploads',
+                  method: 'POST',
+                  file: file
+
+            });
+>>>>>>> 482b0322780270e946bb8b7b399f35a4436b148d
 
             file.upload.then(function (response) {
                 $timeout(function () {

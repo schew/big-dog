@@ -31,22 +31,11 @@ app.route('/upload')
 		req.pipe(req.busboy);
 		req.busboy.on('file', function(fieldname, file, filename) {
 			console.log("Uploading: " + filename);
-			//Path to where it'll be uploaded
+
 			var xtsn = filename.substring(filename.lastIndexOf("."), filename.length);
-			fstream = fs.createWriteStream(__dirname + '/public/data/bbqpizza' + xtsn);
-
-		    fstream.on('open', function(fd) {
-		    	file.pipe(fstream);
-		    }).on('close', function() {
-				console.log("Upload Finished of " + filename);
-				res.redirect('back');
-			});
-
-			// file.pipe(fstream);
-			// fstream.on('close', function() {
-			// 	console.log("Upload Finished of " + filename);
-			// 	res.redirect('back');
-			// });
+	    	var ws = fs.createWriteStream('public/data/bbqpizza' + xtsn);
+	    	file.pipe(ws);
+	    	
 		});
 	});
 
