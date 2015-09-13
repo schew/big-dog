@@ -82,7 +82,7 @@ DataScrubbing <- function(file_name)
   return(list(dataTypes,df))
 }
 
-input <- DataScrubbing("home/ec2-user/big-dog/public/data/barbecuepizza")
+input <- DataScrubbing("home/ec2-user/big-dog/public/data/bbqpizza")
 
 input_data <- input[[2]]
 
